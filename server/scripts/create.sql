@@ -1,0 +1,160 @@
+-- own/create new schemas for standard raw->stage->schema heirarchy.
+
+-- clean up
+drop schema if exists clutter cascade;
+drop schema if exists clutter_stage cascade;
+drop schema if exists clutter_raw cascade;
+
+drop group clutter_etl_grp;
+drop group clutter_ro_grp;
+
+drop user if exists clutter_raw;
+drop user if exists clutter_stage;
+drop user if exists clutter_etl;
+drop user if exists clutter_ro;
+drop user if exists clutter;
+
+-- schema owners
+-- SCRIPT WILL FAIL AT THIS POINT UNLESS ...
+create user clutter password 'InTh3B0x';
+create user clutter_raw password 'InTh3B0x';
+create user clutter_stage password 'InTh3B0x';
+create user clutter_etl password 'InTh3B0x';
+create user clutter_ro password 'InTh3B0x';
+
+-- set search_path for users
+alter user clutter set search_path=clutter_raw,clutter_stage,clutter;
+alter user clutter_stage set search_path=clutter_raw,clutter_stage,clutter;
+alter user clutter_raw set search_path=clutter_raw,clutter_stage,clutter;
+alter user clutter_etl set search_path=clutter_raw,clutter_stage,clutter;
+alter user clutter_ro set search_path=clutter;
+
+-- create schemas
+create schema clutter authorization clutter;
+create schema clutter_raw authorization clutter_raw;
+create schema clutter_stage authorization clutter_stage;
+
+-- revoke access to schemas from public just in case
+revoke all on schema clutter from public;
+revoke all on schema clutter_raw from public;
+revoke all on schema clutter_stage from public;
+
+-- create group for etl
+create group clutter_etl_grp;
+create group clutter_ro_grp;
+
+-- add to group
+alter group clutter_etl_grp add user clutter;
+alter group clutter_etl_grp add user clutter_stage;
+alter group clutter_etl_grp add user clutter_raw;
+alter group clutter_etl_grp add user clutter_etl;
+alter group clutter_ro_grp add user clutter_ro;
+
+-- group schema grants
+grant all on schema clutter to group clutter_etl_grp;
+grant all on schema clutter_raw to group clutter_etl_grp;
+grant all on schema clutter_stage to group clutter_etl_grp;
+grant usage on schema clutter to group clutter_ro_grp;
+grant usage on schema clutter_raw to group clutter_ro_grp;
+grant usage on schema clutter_stage to group clutter_ro_grp;
+
+-- group default privs
+alter default privileges in schema clutter grant select, insert, update, delete, references on tables to group clutter_etl_grp;
+alter default privileges in schema clutter grant select on tables to group clutter_ro_grp;
+alter default privileges in schema clutter_stage grant select, insert, update, delete, references on tables to group clutter_etl_grp;
+alter default privileges in schema clutter_raw grant select, insert, update, delete, references on tables to group clutter_etl_grp;
+
+-- production tables
+
+/*
+--drop table clutter_raw.events cascade;
+create table clutter_raw.events (
+   pk serial primary key,
+   id bigint,
+   bot boolean,
+   "length.new" bigint,
+   "length.old" bigint,
+   log_action varchar,
+   log_action_comment varchar,
+   log_id varchar,
+   log_params varchar[],
+   "log_params.initalTags" varchar,
+   "log_params.logid" varchar,
+   "log_params.revid" varchar,
+   "log_params.tags" varchar,
+   "log_params.tagsAdded" varchar,
+   "log_params.tagsAddedCount" varchar,
+   "log_params.tagsRemoved" varchar,
+   "log_params.tagsRemovedCount" varchar,
+   "log_params.newgroups" varchar[],
+   "log_params.oldgroups" varchar[],
+   "log_params.newmetadata" varchar[],
+   "log_params.oldmetadata" varchar[],
+   "log_params.noredir" varchar,
+   "log_params.target" varchar,
+   "log_params.auto" varchar,
+   "log_params.curid" varchar,
+   "log_params.ids" varchar,
+   "log_params.group-label" varchar,
+   "log_params.language" varchar,
+   "log_params.new-state" varchar,
+   "log_params.old-state" varchar,
+   "log_params.previd" varchar,
+   "log_params.img_sha1" varchar,
+   "log_params.cascade" varchar,
+   "log_params.description" varchar,
+   "log_params.details" varchar,
+   "log_params.action" varchar,
+   "log_params.actions" varchar,
+   "log_params.filter" varchar,
+   "log_params.duration" varchar,
+   "log_params.flags" varchar,
+   "log_params.img_timestamp" varchar,
+   "log_params.log" varchar,
+   "log_params.userid" varchar,
+   log_type varchar,
+   comment varchar,
+   "meta.domain" varchar,
+   "meta.dt" varchar,
+   "meta.id" varchar,
+   "meta.offset" varchar,
+   "meta.partition" varchar,
+   "meta.request_id" varchar,
+   "meta.schema_uri" varchar,
+   "meta.topic" varchar,
+   "meta.uri" varchar,
+   minor boolean,
+   namespace bigint,
+   parsedcomment varchar,
+   patrolled boolean,
+   "revision.new" bigint,
+   "revision.old" bigint,
+   server_name varchar,
+   server_script_path varchar,
+   server_url varchar,
+   timestamp bigint,
+   title varchar,
+   type varchar,
+   "user" varchar,
+   wiki varchar
+);
+
+-- grants
+grant all on clutter_raw.events to clutter_etl_grp;
+grant select on clutter_raw.events to clutter_ro_grp;
+
+create index i_events_id on clutter_raw.events(id);
+*/
+
+--drop table clutter_raw.events cascade;
+create table clutter_raw.events (
+   pk bigint generated by default as identity primary key,
+   event jsonb
+);
+
+-- grants
+grant all on clutter_raw.events to clutter_etl_grp;
+grant select on clutter_raw.events to clutter_ro_grp;
+
+-- staging tables
+
