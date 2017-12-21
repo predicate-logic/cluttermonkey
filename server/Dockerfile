@@ -35,4 +35,5 @@ EXPOSE 5432
 RUN echo "host  all  all 172.0.0.0/8 trust" >>  /etc/postgresql/10/main/pg_hba.conf
 
 # start PG server
-CMD ["/usr/lib/postgresql/10/bin/postgres", "-D", "/var/lib/postgresql/10/main", "-c", "listen_addresses=*", "-c", "config_file=/etc/postgresql/10/main/postgresql.conf", "-c", "log_connections=yes", "-c", "log_statement=all"] 
+CMD ["/bin/bash"]
+#CMD ["/usr/lib/postgresql/10/bin/postgres", "-D", "/var/lib/postgresql/10/main", "-c", "listen_addresses=*", "-c", "config_file=/etc/postgresql/10/main/postgresql.conf", "-c", "log_connections=yes", "-c", "log_statement=ddl"] 

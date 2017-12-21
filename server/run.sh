@@ -9,6 +9,11 @@ function usage {
     exit 1
 }
 
+if [[ $# -ne 1 ]]; then
+    usage
+    exit 1
+fi
+
 # script install directory
 DOCKER_IMAGE="clutter"
 SCRIPT_NAME="server"
@@ -21,14 +26,16 @@ SCRIPT_PATH="$CURR_PATH/$SCRIPT_NAME"
 PYENV_VERSION="${PYENV_VERSION:-3.5.1}"
 
 # docker command "flavors"
-CMD=
+CMD_SETUP="/$SCRIPT_NAME/script/run_setup.sh"
 CMD_BASH="/bin/bash"
 
 INTERACTIVE=""
-while getopts ":sbi" opt; do
+while getopts ":psbi" opt; do
     case $opt in
         s)
-	    echo "Setting up Dockerized PostgreSQL.  This may take a few minutes ..."
+	    echo "Setting up Dockerized PostgreSQL.  Server will start after setup."
+            sleep 2
+	    CMD=${CMD_SETUP}
             ;;
         b)
             CMD=${CMD_BASH}
@@ -58,10 +65,10 @@ fi
 
 echo "Script directory: $SCRIPT_PATH"
 echo "Running as: $(id)"
-echo "Running: $CMD"
+echo "Running: '$CMD'"
 
 # run docker container, pass env vars
-docker run ${PRIVILEGED} --rm ${INTERACTIVE} \
+docker run --rm ${INTERACTIVE} \
     --name clutter_${SCRIPT_NAME} \
     -e INTERACTIVE="${INTERACTIVE}" \
     -h ${SCRIPT_NAME} \
