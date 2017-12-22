@@ -1,12 +1,12 @@
 # vim:set ft=dockerfile:
 
-# GListen Clutter assignment
+# Clutter interview assignment
 FROM ubuntu:16.04
 MAINTAINER mfwilson <mfwilson@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# Setup Ubuntu (https://github.com/dockerfile/ubuntu/blob/master/Dockerfile)
+# setup ubuntu
 RUN \
   sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
   apt-get update && \
@@ -29,11 +29,22 @@ RUN rm -rf /var/lib/apt/lists/*
 
 USER postgres
 
+# setup pyenv virtualenv
+ENV PYENV_ROOT /var/lib/postgresql/.pyenv
+ENV PATH /var/lib/postgresql/.pyenv/shims:/var/lib/postgresql/.pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+RUN curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+
+# Install python 3.5.1 via pyenv
+RUN pyenv install 3.5.1
+
+ENV PYENV_VERSION="3.5.1"
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ADD requirements.txt /tmp/
+RUN pip install --upgrade pip
+RUN pip install -r /tmp/requirements.txt
+
+
 EXPOSE 5432
 
-# open up PG to accept all connections
-RUN echo "host  all  all 172.0.0.0/8 trust" >>  /etc/postgresql/10/main/pg_hba.conf
-
-# start PG server
 CMD ["/bin/bash"]
-#CMD ["/usr/lib/postgresql/10/bin/postgres", "-D", "/var/lib/postgresql/10/main", "-c", "listen_addresses=*", "-c", "config_file=/etc/postgresql/10/main/postgresql.conf", "-c", "log_connections=yes", "-c", "log_statement=ddl"] 

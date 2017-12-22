@@ -7,15 +7,16 @@
 import click
 import logging
 
-from get import etl
-from get import __version__
+from hear import etl
+from hear import __version__
+from hear import settings
 
-logging.basicConfig()
-log = logging.getLogger('get')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+log = logging.getLogger('hear')
 
 
 def set_console_log_level(level):
-    """Set log level to increase console verbosity.  Usually for implementing a --verbose flag."""
+    """Set log level to increase console verbosity for --verbose flag."""
 
     # set console logger to a higher logging level
     [h.setLevel(level) for h in log.handlers if type(h) == logging.StreamHandler]
@@ -89,14 +90,15 @@ def cli():
 @pass_state
 @click.option("--event-type", type=click.STRING, help="Filter event types.  Defaults to 'message' type.", default="message")
 @click.option("--frac", type=click.FLOAT, help="Sample data fraction.  Defaults to 1.0", default=1.0)
-def stream(state, event_type, frac):
+@click.option("--db_url", type=click.STRING, help="Override SQLAlchemy connection URL", default=settings.DB_URL)
+def stream(state, event_type, frac, db_url):
     """Retrieve stream of events.
     """
 
     if frac != 1.0:
-        print("Sampling data: {}".format(frac))
+        log.warn("Sampling data: {}".format(frac))
 
-    etl.process_stream(event_type, frac)
+    etl.process_stream(event_type, frac, db_url)
 
 
 if '__main__' == __name__:

@@ -1,26 +1,26 @@
 -- own/create new schemas for standard raw->stage->schema heirarchy.
 
--- clean up
-drop schema if exists clutter cascade;
-drop schema if exists clutter_stage cascade;
-drop schema if exists clutter_raw cascade;
-
-drop group clutter_etl_grp;
-drop group clutter_ro_grp;
-
-drop user if exists clutter_raw;
-drop user if exists clutter_stage;
-drop user if exists clutter_etl;
-drop user if exists clutter_ro;
-drop user if exists clutter;
+-- -- clean up
+-- drop schema if exists clutter cascade;
+-- drop schema if exists clutter_stage cascade;
+-- drop schema if exists clutter_raw cascade;
+-- 
+-- drop group clutter_etl_grp;
+-- drop group clutter_ro_grp;
+-- 
+-- drop user if exists clutter_raw;
+-- drop user if exists clutter_stage;
+-- drop user if exists clutter_etl;
+-- drop user if exists clutter_ro;
+-- drop user if exists clutter;
 
 -- schema owners
 -- SCRIPT WILL FAIL AT THIS POINT UNLESS ...
-create user clutter password 'InTh3B0x';
-create user clutter_raw password 'InTh3B0x';
-create user clutter_stage password 'InTh3B0x';
-create user clutter_etl password 'InTh3B0x';
-create user clutter_ro password 'InTh3B0x';
+create user clutter password 'Clutt3rM0nk3y';
+create user clutter_raw password 'Clutt3rM0nk3y';
+create user clutter_stage password 'Clutt3rM0nk3y';
+create user clutter_etl password 'Clutt3rM0nk3y';
+create user clutter_ro password 'Clutt3rM0nk3y';
 
 -- set search_path for users
 alter user clutter set search_path=clutter_raw,clutter_stage,clutter;

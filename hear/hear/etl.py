@@ -6,10 +6,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sseclient import SSEClient as EventSource
 
-from get import settings
+from hear import settings
 
-logging.basicConfig()
-log = logging.getLogger()
+log = logging.getLogger('hear')
 
 # globals
 Base = declarative_base()
@@ -24,22 +23,22 @@ class Events(Base):
     event = sa.Column(sa.JSON)
 
 
-def init_sqlalchemy(dbname=settings.DB_URL):
+def init_sqlalchemy(db_url=settings.DB_URL):
     global engine
-    engine = sa.create_engine(dbname, echo=False)
+    engine = sa.create_engine(db_url, echo=False)
     DBSession.remove()
     DBSession.configure(bind=engine, autoflush=False, expire_on_commit=False)
 
 
-def process_stream(event_type, frac=1.0):
+def process_stream(event_type, frac=1.0, db_url=settings.DB_URL):
     """Listen for event changes and propogate to DB.
     """
 
     # setup
-    init_sqlalchemy()
+    init_sqlalchemy(db_url=db_url)
     i = 0
     total = 0
-    print("Listening for new EventSource data.  Please wait ...")
+    log.warn("Listening for new EventSource data.  Please wait ...")
     try:
         for event in EventSource(settings.SSE_URL):
             if event.event == event_type:
@@ -48,12 +47,13 @@ def process_stream(event_type, frac=1.0):
                     event = Events(event=record)
                     DBSession.add(event)
                     i += 1
+                    # batch inserts for performance
                     if i % 100 == 0:
                             DBSession.flush()
                             DBSession.commit()
                             total += i
                             i = 0
-                            print("Inserted total: {}".format(total))
+                            log.info("Heard and inserted {} SSEvents total.".format(total))
 
                 except ValueError:
                     pass

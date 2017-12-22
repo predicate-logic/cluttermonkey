@@ -5,7 +5,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-SCRIPT_NAME="run_pg"
+SCRIPT_NAME="hear"
 CURR_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 function usage {
