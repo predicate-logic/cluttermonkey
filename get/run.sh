@@ -21,7 +21,6 @@ PYENV_VERSION="${PYENV_VERSION:-3.5.1}"
 
 # docker command "flavors"
 CMD_BASH="/bin/bash"
-CMD=
 
 INTERACTIVE=""
 while getopts ":sbi" opt; do
@@ -57,13 +56,12 @@ fi
 
 echo "Script directory: $SCRIPT_PATH"
 echo "Running as: $(id)"
-echo "Running: $CMD"
+echo "Running: '$CMD'"
 
 # run docker container, pass env vars
-docker run ${PRIVILEGED} --rm ${INTERACTIVE} \
+docker run --rm ${INTERACTIVE} \
     --name clutter_${SCRIPT_NAME} \
-    -e INTERACTIVE="${INTERACTIVE}" \
-    -h ${SCRIPT_NAME} \
+    -h clutter_${SCRIPT_NAME} \
     --dns=8.8.8.8 \
     --volume $CURR_PATH:/$SCRIPT_NAME \
     --link clutter_server \
