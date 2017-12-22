@@ -1,0 +1,2 @@
+{"_id":"QAZLf6nf8u8b4NJu","email":"admin@cluttermonkey.com","role":"admin","passhash":"$2a$10$f.pTnKcDB3kUpSFbkPg0K.rEKfJXSK44TpdekfoIUgUFOR9CeugMa","createdDate":{"$$date":1513978249876},"modifiedDate":{"$$date":1513978303349},"signupDate":{"$$date":1513978303349}}
+{"$$indexCreated":{"fieldName":"email","unique":true,"sparse":false}}

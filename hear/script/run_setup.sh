@@ -16,6 +16,9 @@ echo "Configuring Clutter PG instance.  Please wait ..."
 /usr/bin/createdb clutter
 psql -U postgres --quiet -f /$SCRIPT_NAME/script/create.sql clutter
 
+# start sqlpad
+sqlpad --dir /${SCRIPT_NAME}/sqlpad --port 3000 --passphrase password  &
+ 
 # run script to collect SSEvents
 cd ${SCRIPT_NAME}
 echo "Running SSEvents listener." 1>&2

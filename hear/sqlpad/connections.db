@@ -1,0 +1,1 @@
+{"_id":"0inm7swqsv7BPRSl","name":"clutter_events","driver":"postgres","host":"0.0.0.0","port":"5432","database":"clutter","username":"75c97ae16e888bbd3b168c3d812baf0d","password":"0390a23613727a918e3f305b4bae0159","sqlserverEncrypt":false,"postgresSsl":false,"useSocks":false,"mysqlInsecureAuth":false,"createdDate":{"$$date":1513978249879},"modifiedDate":{"$$date":1513978593780}}

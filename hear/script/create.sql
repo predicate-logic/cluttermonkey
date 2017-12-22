@@ -16,11 +16,11 @@
 
 -- schema owners
 -- SCRIPT WILL FAIL AT THIS POINT UNLESS ...
-create user clutter password 'Clutt3rM0nk3y';
-create user clutter_raw password 'Clutt3rM0nk3y';
-create user clutter_stage password 'Clutt3rM0nk3y';
-create user clutter_etl password 'Clutt3rM0nk3y';
-create user clutter_ro password 'Clutt3rM0nk3y';
+create user clutter password 'password';
+create user clutter_raw password 'password';
+create user clutter_stage password 'password';
+create user clutter_etl password 'password';
+create user clutter_ro password 'password';
 
 -- set search_path for users
 alter user clutter set search_path=clutter_raw,clutter_stage,clutter;

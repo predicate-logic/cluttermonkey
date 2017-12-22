@@ -90,9 +90,23 @@ docker run ${DETACH} ${INTERACTIVE} --rm \
         -h ${DOCKER_IMAGE}_${SCRIPT_NAME} \
         --dns=8.8.8.8 \
         -p 54321:5432 \
+        -p 3000:3000 \
         --volume $CURR_PATH:/$SCRIPT_NAME \
         $DOCKER_IMAGE:$SCRIPT_NAME $CMD 2>&1
 
+sleep 5
 if [ ! -z "$DETACH" ]; then
         echo "Docker container detached, but running in the background."
 fi
+
+echo "In a browser got to http://localhost:3000 and login as: admin@cluttermonkey.com / password"
+echo "==="
+echo "Once logged in try the following URL's or click on the chart options for each defined query."
+echo "Top Editors: http://localhost:3000/query-chart/gT8IVTheryUHI8nO"
+echo "Edit Types: http://localhost:3000/query-chart/Dq1RSaZyPWG1gGwC"
+echo "Edits By Minute: http://localhost:3000/query-chart/vlJqTigQJzeYiDEi"
+echo "==="
+echo "Refreshing the browser will pull the latest data from the data store."
+
+
+
