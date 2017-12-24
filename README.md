@@ -25,17 +25,23 @@ This will configure and run a Docker container to host the PostgreSQL instance w
       * Once container builds and starts itself it will start collecting events.
 3. You can stop the container by typing `Ctrl-C` in the same terminal window that you started the run from. 
 
-NOTE: all passwords for all services within the container should be the string literal "`password`".
+NOTES:
+
+   * All passwords for all services within the container should be the string literal "`password`".
+   * Relative paths noted in the documentation are assumed to be rooted in the `cluttermonkey` Git checkout directory.
+   * Absolute paths are assumed to run inside the container with the root path `/hear`.
+
 
 #### Post-Installation
 
-After the run command has built the Docker container and started the tool running the following has happened:
+After the run command has built the Docker container and started the Python script to collect events the following has happened:
 
    * An Ubuntu 16.04 (LTS) instance is running as a container.
    * Within the container an PostgreSQL 10.1 instance has been configured and is running as the primary datastore for this excercise.
       * Example `psql` connect command: `psql -U postgres clutter`
-      * Schema created and configured with script in: `$HOME/script/create.sql`
+      * Schema created and configured with script in: `script/create.sql`
    * A Python script (`hear.cli`) has been started inside the container and is listenting for SSEvents and is inserting them in the datastore.
+      * Script will not return until it is cancelled.  This will usually terminate the container as well.
    * A SQLPad web-based visualization server has been started at port 3000 (http://localhost:3000).  
       * Username: `admin@cluttermonkey.com`
       * Password: `password`
@@ -72,12 +78,12 @@ After the run command has built the Docker container and started the tool runnin
 Basic plan is to use a Python script to poll the SSEvent stream and push these events into a Datastore.
 
 ##### Step 2e (Schema Design)
-Datastore choice is PostgreSQL 10.1 due to it's native JSONB datatype that compresses and stores JSON easily (`clutter_raw.events`) and the flexibility to create views on the JSON data to materialize the columns into a normalized table structure (`clutter_stage.v_events`) in a performant manner.
+Datastore choice is PostgreSQL 10.1 due to it's native JSONB datatype that compresses and stores JSON easily (table: `clutter_raw.events`) and the flexibility to create views on the JSON data to materialize the columns into a normalized table structure (view: `clutter_stage.v_events`) in a performant manner.
 
-Schema is created from script in: `$HOME/script/create.sql` for full details.
+Schema is created from script in: `script/create.sql` for full details.
 
 ##### Step 3.1 (Real-time Updating)
-See diagram from **Step 1**.  Python code (`$HOME/hear/cli.py`) listens continously for changes in the SSEvent stream and bulk inserts them in batches of 100 into the PostgreSQL data store.  
+See diagram from **Step 1**.  Python code (`hear/cli.py`) listens continously for changes in the SSEvent stream and bulk inserts them in batches of 100 into the PostgreSQL data store.  
 
 The `hear.cli` Python script is fully CLI compliant and has built in help.  You can see it's help file by running `cd $HOME/hear && python -m hear.cli --help` from a BASH session inside the Docker container.  The script only has a single command `stream`.
 
