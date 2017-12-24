@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
@@ -39,21 +40,29 @@ def process_stream(event_type, frac=1.0, db_url=settings.DB_URL):
     i = 0
     total = 0
     log.warn("Listening for new EventSource data.  Please wait ...")
+    fracint = int(frac * 100)
+
     try:
         for event in EventSource(settings.SSE_URL):
             if event.event == event_type:
                 try:
                     record = json.loads(event.data)
                     event = Events(event=record)
-                    DBSession.add(event)
-                    i += 1
+                    if random.randint(0, fracint) <= fracint:
+                        DBSession.add(event)
+                        i += 1
+                    else:
+                        log.info("Skipping event due to sampling.")
+
                     # batch inserts for performance
                     if i % 100 == 0:
                             DBSession.flush()
                             DBSession.commit()
                             total += i
                             i = 0
-                            log.info("Heard and inserted {} SSEvents total.".format(total))
+                            msg = "Heard 100 events.  Inserted {} SSEvents total.".format(total)
+                            print(msg)
+                            log.info(msg)
 
                 except ValueError:
                     pass

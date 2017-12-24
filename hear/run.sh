@@ -39,7 +39,7 @@ while getopts "hsrBb" opt; do
          echo "Setting up Dockerized PostgreSQL.  Server will start after setup."
          sleep 1
          CMD="/$SCRIPT_NAME/script/run_setup.sh"
-         DETACH="--detach"
+         DETACH=""
          ;;
       s)
          echo "Stopping container: ${DOCKER_IMAGE}_${SCRIPT_NAME}"
@@ -84,21 +84,9 @@ echo "Script directory: $SCRIPT_PATH"
 echo "Running as: $(id)"
 echo "Running: '$CMD'"
 
-# run docker container, pass env vars
-docker run ${DETACH} ${INTERACTIVE} --rm \
-        --name ${DOCKER_IMAGE}_${SCRIPT_NAME} \
-        -h ${DOCKER_IMAGE}_${SCRIPT_NAME} \
-        --dns=8.8.8.8 \
-        -p 54321:5432 \
-        -p 3000:3000 \
-        --volume $CURR_PATH:/$SCRIPT_NAME \
-        $DOCKER_IMAGE:$SCRIPT_NAME $CMD 2>&1
-
-sleep 5
-if [ ! -z "$DETACH" ]; then
-        echo "Docker container detached, but running in the background."
-fi
-
+echo
+echo "=="
+echo "SQLPad query/viz access:"
 echo "In a browser got to http://localhost:3000 and login as: admin@cluttermonkey.com / password"
 echo "==="
 echo "Once logged in try the following URL's or click on the chart options for each defined query."
@@ -107,6 +95,19 @@ echo "Edit Types: http://localhost:3000/query-chart/Dq1RSaZyPWG1gGwC"
 echo "Edits By Minute: http://localhost:3000/query-chart/vlJqTigQJzeYiDEi"
 echo "==="
 echo "Refreshing the browser will pull the latest data from the data store."
+sleep 2
 
+# run docker container, pass env vars
+docker run ${DETACH} ${INTERACTIVE} --rm \
+        --name ${DOCKER_IMAGE}_${SCRIPT_NAME} \
+        -h ${DOCKER_IMAGE}_${SCRIPT_NAME} \
+        --dns=8.8.8.8 \
+        -p 54321:5432 \
+        -p 3000:3000 \
+        --volume $CURR_PATH:/$SCRIPT_NAME \
+        $DOCKER_IMAGE:$SCRIPT_NAME $CMD 2>&1 
 
+if [ ! -z "$DETACH" ]; then
+        echo "Docker container detached, but running in the background."
+fi
 
