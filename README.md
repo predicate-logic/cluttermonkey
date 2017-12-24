@@ -10,7 +10,7 @@ The assigment has three infrastructural components:
 
 I've opted to install all deliverables into a single Docker container to make the experience easy to reproduce locally for testing.  Please follow the instructions below to retrieve the project from my GitHub repo and then run the required command to build the environment.  
 
-Please note building the Docker container for this project can take a while.  Once built though re-running the start command will re-start the server in a clean state and start the collection process anew.  Once started you can go to the browser endpoint to run the queries and visualization against the data as it is collected in real-time. 
+Please note building the Docker container for this project can take a while.  Once built though re-running the start command will restart the server in a clean state and start the collection process anew.  Once started you can go to the browser endpoint to run the queries and visualization against the data as it is collected in real-time. 
 
 ---
 #### Install Instructions
@@ -21,7 +21,9 @@ This will configure and run a Docker container to host the PostgreSQL instance w
    * `git clone http://www.github.com/predicatelogic/cluttermonkey`
 2. Build Docker container and run it.
    * `cd cluttermonkey && ./run.sh -r`
-      * Initial container build can take 10+ minutes and will print instructions once the container has been built and is ready for use. 
+      * Initial container build can take 10+ minutes and will print instructions once the container has been built and is ready for use.
+      * Once container builds and starts itself it will start collecting events.
+3. You can stop the container by typing `Ctrl-C` in the same terminal window that you started the run from. 
 
 NOTE: all passwords for all services within the container should be the string literal "`password`".
 
@@ -32,8 +34,8 @@ After the run command has built the Docker container and started the tool runnin
    * An Ubuntu 16.04 (LTS) instance is running as a container.
    * Within the container an PostgreSQL 10.1 instance has been configured and is running as the primary datastore for this excercise.
       * Example `psql` connect command: `psql -U postgres clutter`
-      * Schema created with script in: `$HOME/hear/script/create.sql`
-   * A Python script (here.cli) has been started inside the container and is listenting for SSEvents and is inserting them in the datastore.
+      * Schema created and configured with script in: `$HOME/script/create.sql`
+   * A Python script (`hear.cli`) has been started inside the container and is listenting for SSEvents and is inserting them in the datastore.
    * A SQLPad web-based visualization server has been started at port 3000 (http://localhost:3000).  
       * Username: `admin@cluttermonkey.com`
       * Password: `password`
@@ -72,19 +74,19 @@ Basic plan is to use a Python script to poll the SSEvent stream and push these e
 ##### Step 2e (Schema Design)
 Datastore choice is PostgreSQL 10.1 due to it's native JSONB datatype that compresses and stores JSON easily (`clutter_raw.events`) and the flexibility to create views on the JSON data to materialize the columns into a normalized table structure (`clutter_stage.v_events`) in a performant manner.
 
-Schema is created from script in: `$HOME/hear/script/create.sql` for full details.
+Schema is created from script in: `$HOME/script/create.sql` for full details.
 
 ##### Step 3.1 (Real-time Updating)
-See diagram from **Step 1**.  Python code (`$HOME/hear/hear/cli.py`) listens continously for changes in the SSEvent stream and bulk inserts them in batches of 100 into the PostgreSQL data store.  
+See diagram from **Step 1**.  Python code (`$HOME/hear/cli.py`) listens continously for changes in the SSEvent stream and bulk inserts them in batches of 100 into the PostgreSQL data store.  
 
-The `hear.cli` Python script is fully CLI compliant and has built in help.  You can see it's help file by running `cd $HOME/hear && python -m hear.cli --help`.  The script only has a single command `stream`.
+The `hear.cli` Python script is fully CLI compliant and has built in help.  You can see it's help file by running `cd $HOME/hear && python -m hear.cli --help` from a BASH session inside the Docker container.  The script only has a single command `stream`.
 
 Example Usage (from host):
 
-   1. `cd cluttermonkey`
-   2. Start a BASH shell inside running Docker container: `./hear/run.sh -b`
-   3. Move into `here` source directory: `cd /hear`
-   4. Run script: `python -m here.cli stream --help`
+   1. On the host: `cd cluttermonkey`
+   2. Start a BASH shell inside running Docker container: `./run.sh -b`
+   3. Move into `hear` source directory: `cd /hear`
+   4. Run script to get help: `python -m hear.cli stream --help`
 
 ```
 postgres@cluttermonkey_hear:/hear$ python -m hear.cli stream --help
@@ -131,18 +133,18 @@ Per the instructions here are my answers to the questions:
    * **Q**: What assumptions are you making about the data, use cases, or reports needed?
       * **A**: The largest assumption the current codebase makes is that all data flows into a single, un-partitioned table which in production wouldn't be a good choice.  If this were a production ready pipeline I would partition the table using PG 10.1's native partioning and additionally include `pg_partman` for automatic partition managment.  
 
-      I additionally make the assumption that most queries against the `events` data will be range-bounded by date (e.g. last 15-minutes, last 24-hours, etc).  I have created BRIN partition indexes for the table though as they help prevent full-table scans and are particularly effective in data warehous scenarios where the data is naturally ordered.
+      I additionally make the assumption that most queries against the `events` data will be range-bounded by date predicate (e.g. query X for the last 15-minutes, last 24-hours, etc).  I have created BRIN partition indexes on the `event_ts` timestamp field to speed up these types of queries.  BRIN indexes are particularly well suited for this type of access pattern for OLAP servers where the data is naturally ordered.
 
       
    * **Q**: Why did you choose the data store that you did?
       * **A**: My familiarity with PostgreSQL and I know it is used at Clutter making it easier to reason about my solution by whomever would evaluate my solution.  I could have also used any other relational (MySQL/Oracle/Redshift/Snowflake/CitusDB/PipelineDB) or non-relational DB (MongoDB/DyanamoDB).
 
    * **Q**: What are some other options you could have used, and why what advantages or disadvantages would they have?
-      * **A**: Redshift, Snowflake, or CitusDB would be another interesting option as they are columnar databases that wouldn't require the additional maintenance and implementation complexity of partitioning and partition management in PostgreSQL.
+      * **A**: Redshift, Snowflake, or CitusDB would be an interesting option as they are columnar databases that wouldn't require the additional maintenance and implementation complexity of partitioning and partition management in PostgreSQL.
 
-      MongoDB would be interesting due to it's simplicity of implementing JSON storage as it is a JSON native document database.  I personally think for the volume of data though it's performance would be sub-standard.
+      MongoDB could be a decent choice due to it's simplicity of implementing JSON storage as it is a JSON native document database.  I personally think for the volume of data though it's performance would be sub-standard.  Additionally many tools don't support MongoDB for easy querying of data due to it's non-standard query language.
       
-      DynamoDB would be interesting from a scalability standpoint.  Overall you have to decide on your query semantics in advance though as you can only have a limited number of indexes and any ad-hoc queries could consume lots of processing power driving up costs on this DB option.
+      DynamoDB would be interesting from a scalability standpoint.  Overall you have to decide on your query semantics in advance though as you can only have a limited number of indexes and any ad-hoc queries could consume lots of processing power driving up costs for this DB option.
 
    * **Q**: How does the volume or speed of the stream affect your design?
       * **A**: Please see my answer to the first Question.  It was a critical factor on the decision of how to write the ingestion tool and for some of the field and index choices within the resulting schema.
@@ -151,11 +153,11 @@ Per the instructions here are my answers to the questions:
    * **Q**: How did the need to report on the data in a streaming manner affect your design? 
       * **A**: I made a simple design decision on the streaming aspect of the implementation and chose to use an "off-the-shelf" tool (SQLPad) to provide the ability to query the data in real time.  Although not a streaming enabled query tool such as Slide (PipelineDB) due to efficient indexing and windowing of the data it is possible to query the data in "real-time" by simply re-running the query or visualization in the SQLPad browser window.
 
-      To be truely streaming with PG as the data store I would need to implment an asyncronous `NOTIFY` listener in `psycopg2`.  This would also require implmentation of an INSERT trigger in the database.  This was not done but could be relatively easily.
+      To be truely streaming with PG as the data store I would need to implment an asyncronous `NOTIFY` listener in `psycopg2`.  This would also require implmentation of an INSERT trigger in the database.  This was not done but could be completed with a couple of hours of work.
 
       
    * **Q**: What challenges did you encounter in this exercise?
-      * **A**: Not many.  Had a lot of fun building this tool and playing with SQLPad.
+      * **A**: Not many.  My biggest issue was getting NodeJS to install cleanly in the Dockerized environment.  I had a lot of fun working on this assignment and playing with SQLPad, which I hadn't done previously.  Pretty slick and easy to implement visualization tool which I may use in other projects.
 
 ===
 
@@ -163,12 +165,12 @@ Per the instructions here are my answers to the questions:
 
 A few other notes:
    
-   * You can stop the Docker container with `./hear/run.sh -s`.
-      * This will stop the running Docker container and all of it's internal processes.
+   * You can stop the Docker container with `./run.sh -s` or by typing `Ctrl-C` from the terminal window where you first started the `run.sh -r` command.
+      * This will stop the running Docker container and all of it's internal processes and reset the state of the container.
   
-  * The Docker container is reset on each start so any data collected in a previous run will be missing on a subsequent start of the container.  Because of this the most recent edits queries will need to collect new data for a few minutes.
+  * The Docker container is reset on each start so any data collected in a previous run will be missing on a subsequent start of the container.  Because of this the most recent edits queries will need to collect new data for a few minutes if you re-run the container.
   
-  * You can run `./run.sh -b` if you want to `exec` a BASH shell into the running container to look around.
+  * While the container is running you can run `./run.sh -b` if you want to `exec` a BASH shell to look around.
 
   * You can run `./run.sh -?` to get help on any available commands.
 
