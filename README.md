@@ -18,9 +18,9 @@ Please note building the Docker container for this project can take a while.  On
 This will configure and run a Docker container to host the PostgreSQL instance which will serve as the datastore for this assignment as well as the visualization utility.
 
 1. Checkout from Github.
-   * `git clone https://github.com/predicate-logic/cluttermonkey.git`
+   * `git clone http://www.github.com/predicatelogic/cluttermonkey`
 2. Build Docker container and run it.
-   * `cd cluttermonkey && ./here/run.sh -r`
+   * `cd cluttermonkey && ./run.sh -r`
       * Initial container build can take 10+ minutes and will print instructions once the container has been built and is ready for use. 
 
 NOTE: all passwords for all services within the container should be the string literal "`password`".
@@ -168,9 +168,9 @@ A few other notes:
   
   * The Docker container is reset on each start so any data collected in a previous run will be missing on a subsequent start of the container.  Because of this the most recent edits queries will need to collect new data for a few minutes.
   
-  * You can run `./hear/run.sh -b` if you want to `exec` a BASH shell into the running container to look around.
+  * You can run `./run.sh -b` if you want to `exec` a BASH shell into the running container to look around.
 
-  * You can run `./hear/run.sh -?` to get help on any available commands.
+  * You can run `./run.sh -?` to get help on any available commands.
 
   * `password` is the password to all processes in the exercise.  `admin@clutermonkey.com` is the username for SQLPad. 
 
