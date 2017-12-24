@@ -18,7 +18,7 @@ Please note building the Docker container for this project can take a while.  On
 This will configure and run a Docker container to host the PostgreSQL instance which will serve as the datastore for this assignment as well as the visualization utility.
 
 1. Checkout from Github.
-   * `git clone http://www.github.com/predicatelogic/cluttermonkey`
+   * `git clone http://www.github.com/predicate-logic/cluttermonkey`
 2. Build Docker container and run it.
    * `cd cluttermonkey && ./run.sh -r`
       * Initial container build can take 10+ minutes and will print instructions once the container has been built and is ready for use.
